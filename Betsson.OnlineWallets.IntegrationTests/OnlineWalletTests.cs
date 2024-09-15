@@ -1,3 +1,4 @@
+using System.Net;
 using FluentAssertions;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,8 @@ using OnlineWallets.IntegrationTests.Models;
 
 using Betsson.OnlineWallets.Data;
 using Betsson.OnlineWallets.IntegrationTests.Factories;
+using Betsson.OnlineWallets.IntegrationTests.Helpers;
+using Betsson.OnlineWallets.IntegrationTests.Models;
 
 namespace Betsson.OnlineWallets.IntegrationTests
 {
@@ -52,11 +55,7 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.GetAsync("/OnlineWallet/Balance");
 
             // Assert
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-            var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseString);
-
-            balanceResponse.Should().NotBeNull();
+            var balanceResponse = await GetAndAssertResponseAsync<BalanceResponse>(response, HttpStatusCode.OK);
             balanceResponse.Amount.Should().Be(200);
         }
 
@@ -83,11 +82,7 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.PostAsync("/OnlineWallet/Deposit", depositContent);
 
             // Assert
-            response.EnsureSuccessStatusCode(); 
-            var responseString = await response.Content.ReadAsStringAsync();
-            var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseString);
-
-            balanceResponse.Should().NotBeNull();
+            var balanceResponse = await GetAndAssertResponseAsync<BalanceResponse>(response, HttpStatusCode.OK);
             balanceResponse.Amount.Should().Be(150);
         }
 
@@ -114,11 +109,7 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.PostAsync("/OnlineWallet/Withdraw", withdrawContent);
 
             // Assert
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-            var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseString);
-
-            balanceResponse.Should().NotBeNull();
+            var balanceResponse = await GetAndAssertResponseAsync<BalanceResponse>(response, HttpStatusCode.OK);
             balanceResponse.Amount.Should().Be(50);
         }
 
@@ -137,10 +128,7 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.PostAsync("/OnlineWallet/Withdraw", content);
 
             // Assert
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-            var responseString = await response.Content.ReadAsStringAsync();
-            var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseString);
-            errorResponse.Should().NotBeNull();
+            var errorResponse = await GetAndAssertResponseAsync<ErrorResponse>(response, HttpStatusCode.BadRequest);
             errorResponse.Title.Should().Be("Invalid withdrawal amount. There are insufficient funds.");
             errorResponse.Status.Should().Be(400);
         }
@@ -168,11 +156,7 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.PostAsync("/OnlineWallet/Withdraw", withdrawContent);
 
             // Assert
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-            var balanceResponse = JsonConvert.DeserializeObject<BalanceResponse>(responseString);
-
-            balanceResponse.Should().NotBeNull();
+            var balanceResponse = await GetAndAssertResponseAsync<BalanceResponse>(response, HttpStatusCode.OK);
             balanceResponse.Amount.Should().Be(50.50m);
         }
         
@@ -191,13 +175,11 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.PostAsync("/OnlineWallet/Withdraw", withdrawContent);
 
             // Assert
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
-            var responseString = await response.Content.ReadAsStringAsync();
-            var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseString);
-
-            errorResponse.Should().NotBeNull();
-            errorResponse.Title.Should().Be("One or more validation errors occurred.");
-            errorResponse.Status.Should().Be(400);
+            await response.AssertValidationErrorAsync(
+                expectedTitle: "One or more validation errors occurred.",
+                fieldName: "Amount",
+                expectedErrorMessage: "'Amount' must be greater than or equal to '0'."
+            );
         }
         
         [Fact]
@@ -215,13 +197,20 @@ namespace Betsson.OnlineWallets.IntegrationTests
             var response = await _client.PostAsync("/OnlineWallet/Deposit", depositContent);
 
             // Assert
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+            await response.AssertValidationErrorAsync(expectedTitle:"One or more validation errors occurred.",
+                fieldName: "Amount",
+                expectedErrorMessage: "Amount field should be greator or equal to 0.");
+        }
+        
+        private async Task<T> GetAndAssertResponseAsync<T>(HttpResponseMessage response, HttpStatusCode expectedStatusCode)
+        {
+            response.StatusCode.Should().Be(expectedStatusCode);
+
             var responseString = await response.Content.ReadAsStringAsync();
-            var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseString);
-    
-            errorResponse.Should().NotBeNull();
-            errorResponse.Title.Should().Be("One or more validation errors occurred.");
-            errorResponse.Status.Should().Be(400);
+            var deserializedResponse = JsonConvert.DeserializeObject<T>(responseString);
+
+            deserializedResponse.Should().NotBeNull();
+            return deserializedResponse;
         }
 
         public void Dispose()

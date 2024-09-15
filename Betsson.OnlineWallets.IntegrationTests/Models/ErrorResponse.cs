@@ -1,4 +1,4 @@
-﻿namespace OnlineWallets.IntegrationTests.Models;
+﻿namespace Betsson.OnlineWallets.IntegrationTests.Models;
 
 public class ErrorResponse
 {
