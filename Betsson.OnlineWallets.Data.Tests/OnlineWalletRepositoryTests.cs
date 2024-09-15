@@ -1,5 +1,5 @@
-using Betsson.OnlineWallets.Data.Models;
 using Betsson.OnlineWallets.Data.Repositories;
+using Betsson.OnlineWallets.Data.Tests.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,8 +29,16 @@ public class OnlineWalletRepositoryTests : IDisposable
     public async Task GetLastOnlineWalletEntryAsync_ReturnsMostRecentTransaction_WhenMultipleTransactionsExist()
     {
         // Arrange
-        var entry1 = new OnlineWalletEntry { EventTime = DateTimeOffset.Now.AddMinutes(-10), Amount = 50m };
-        var entry2 = new OnlineWalletEntry { EventTime = DateTimeOffset.Now.AddMinutes(-5), Amount = 100m };
+        var entry1 = new OnlineWalletRepositoryBuilder()
+            .WithAmount(50m)
+            .WithEventTime(DateTimeOffset.Now.AddMinutes(-10))
+            .Build();
+
+        var entry2 = new OnlineWalletRepositoryBuilder()
+            .WithAmount(100m)
+            .WithEventTime(DateTimeOffset.Now.AddMinutes(-5))
+            .Build();
+
         _context.Transactions.AddRange(entry1, entry2);
         await _context.SaveChangesAsync();
 
@@ -57,7 +65,10 @@ public class OnlineWalletRepositoryTests : IDisposable
     public async Task InsertOnlineWalletEntryAsync_AddsEntryToDatabaseSuccessfully()
     {
         // Arrange
-        var newEntry = new OnlineWalletEntry { Amount = 200m, EventTime = DateTimeOffset.UtcNow };
+        var newEntry = new OnlineWalletRepositoryBuilder()
+            .WithAmount(200m)
+            .WithEventTime(DateTimeOffset.UtcNow)
+            .Build();
 
         // Act
         await _repository.InsertOnlineWalletEntryAsync(newEntry);
