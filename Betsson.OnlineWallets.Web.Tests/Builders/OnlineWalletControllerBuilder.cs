@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Betsson.OnlineWallets.Models;

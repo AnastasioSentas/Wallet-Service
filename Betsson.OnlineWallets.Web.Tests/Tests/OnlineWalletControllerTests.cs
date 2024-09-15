@@ -1,14 +1,9 @@
-using System.Threading.Tasks;
+using Betsson.OnlineWallets.Web.Models;
+using Betsson.OnlineWallets.Web.Tests.Builders;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Xunit;
-using Betsson.OnlineWallets.Web.Controllers;
-using Betsson.OnlineWallets.Web.Models;
-using Betsson.OnlineWallets.Models;
-using Betsson.OnlineWallets.Web.Tests.Builders;
-using Moq;
 
-namespace Betsson.OnlineWallets.Web.Tests
+namespace Betsson.OnlineWallets.Web.Tests.Tests
 {
     public class OnlineWalletControllerTests
     {
