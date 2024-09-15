@@ -26,7 +26,7 @@ public class OnlineWalletRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetLastOnlineWalletEntryAsync_ReturnsMostRecentTransaction_WhenMultipleTransactionsExist()
+    public async Task GetLastOnlineWalletEntryAsync_ShouldReturnMostRecentTransaction_WhenMultipleTransactionsExist()
     {
         // Arrange
         var entry1 = new OnlineWalletRepositoryBuilder()
@@ -52,7 +52,7 @@ public class OnlineWalletRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetLastOnlineWalletEntryAsync_ReturnsNull_WhenNoTransactionsExist()
+    public async Task GetLastOnlineWalletEntryAsync_ShouldReturnNull_WhenNoTransactionsExist()
     {
         // Act
         var result = await _repository.GetLastOnlineWalletEntryAsync();
@@ -62,7 +62,7 @@ public class OnlineWalletRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task InsertOnlineWalletEntryAsync_AddsEntryToDatabaseSuccessfully()
+    public async Task InsertOnlineWalletEntryAsync_ShouldAddEntryToDatabaseSuccessfully()
     {
         // Arrange
         var newEntry = new OnlineWalletRepositoryBuilder()
